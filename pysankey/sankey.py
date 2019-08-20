@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
+import matplotlib.font_manager
 
 class PySankeyException(Exception):
     pass
@@ -39,7 +39,7 @@ class LabelMismatch(PySankeyException):
 
 
 def check_data_matches_labels(labels, data, side):
-    if len(labels > 0):
+    if len(labels) > 0:
         if isinstance(data, list):
             data = set(data)
         if isinstance(data, pd.Series):
@@ -95,9 +95,10 @@ def sankey(left, right, leftWeight=None, rightWeight=None, colorDict=None,
     if len(rightWeight) == 0:
         rightWeight = leftWeight
 
+    sns.set_style('whitegrid')
     plt.figure()
     plt.rc('text', usetex=False)
-    plt.rc('font', family='serif')
+    plt.rc('font', family='sans-serif')
 
     # Create Dataframe
     if isinstance(left, pd.Series):
@@ -123,7 +124,7 @@ def sankey(left, right, leftWeight=None, rightWeight=None, colorDict=None,
     if len(rightLabels) == 0:
         rightLabels = pd.Series(dataFrame.right.unique()).unique()
     else:
-        check_data_matches_labels(leftLabels, dataFrame['right'], 'right')
+        check_data_matches_labels(rightLabels, dataFrame['right'], 'right')
     # If no colorDict given, make one
     if colorDict is None:
         colorDict = {}
@@ -195,7 +196,8 @@ def sankey(left, right, leftWeight=None, rightWeight=None, colorDict=None,
             leftWidths[leftLabel]['bottom'] + 0.5 * leftWidths[leftLabel]['left'],
             leftLabel,
             {'ha': 'right', 'va': 'center'},
-            fontsize=fontsize
+            fontsize=fontsize,fontname='Helvetica',
+#            color = colorDict[leftLabel]
         )
     for rightLabel in rightLabels:
         plt.fill_between(
@@ -209,7 +211,8 @@ def sankey(left, right, leftWeight=None, rightWeight=None, colorDict=None,
             rightWidths[rightLabel]['bottom'] + 0.5 * rightWidths[rightLabel]['right'],
             rightLabel,
             {'ha': 'left', 'va': 'center'},
-            fontsize=fontsize
+            fontsize=fontsize,fontname='Helvetica',
+#            color = colorDict[rightLabel]
         )
 
     # Plot strips
@@ -232,12 +235,12 @@ def sankey(left, right, leftWeight=None, rightWeight=None, colorDict=None,
                 leftWidths[leftLabel]['bottom'] += ns_l[leftLabel][rightLabel]
                 rightWidths[rightLabel]['bottom'] += ns_r[leftLabel][rightLabel]
                 plt.fill_between(
-                    np.linspace(0, xMax, len(ys_d)), ys_d, ys_u, alpha=0.65,
+                    np.linspace(0, xMax, len(ys_d)), ys_d, ys_u, alpha=0.6,
                     color=colorDict[labelColor]
                 )
     plt.gca().axis('off')
     plt.gcf().set_size_inches(6, 6)
     if figureName != None:
-        plt.savefig("{}.png".format(figureName), bbox_inches='tight', dpi=150)
+        plt.savefig("{}.pdf".format(figureName), bbox_inches='tight', dpi=150)
     if closePlot:
         plt.close()
